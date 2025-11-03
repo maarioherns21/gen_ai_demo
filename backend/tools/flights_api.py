@@ -1,14 +1,8 @@
 from __future__ import annotations
-import os, time, requests
+import time, requests
 from typing import Dict, Any, List, Optional
 from datetime import date
-from dotenv import load_dotenv
-
-load_dotenv()
-
-HOST = os.getenv("AMADEUS_BASE", "https://test.api.amadeus.com")
-CID  = os.environ["AMADEUS_CLIENT_ID"]
-SEC  = os.environ["AMADEUS_CLIENT_SECRET"]
+from backend.config.settings import AMADEUS_BASE, AMADEUS_CLIENT_ID, AMADEUS_CLIENT_SECRET
 
 _session = requests.Session()
 _token: Optional[str] = None
@@ -20,9 +14,9 @@ def _auth():
     if _token and now < _exp - 60:
         return
     r = _session.post(
-        f"{HOST}/v1/security/oauth2/token",
+        f"{AMADEUS_BASE}/v1/security/oauth2/token",
         headers={"Accept": "application/vnd.amadeus+json"},
-        data={"grant_type":"client_credentials","client_id":CID,"client_secret":SEC},
+        data={"grant_type":"client_credentials","client_id":AMADEUS_CLIENT_ID,"client_secret":AMADEUS_CLIENT_SECRET},
         timeout=20
     )
     r.raise_for_status()
@@ -36,7 +30,7 @@ def _auth():
 
 def _post_offers(body: Dict[str, Any]) -> Dict[str, Any]:
     _auth()
-    r = _session.post(f"{HOST}/v2/shopping/flight-offers", json=body, timeout=45)
+    r = _session.post(f"{AMADEUS_BASE}/v2/shopping/flight-offers", json=body, timeout=45)
     if not r.ok:
         raise requests.HTTPError(f"{r.status_code} {r.reason}: {r.text}", response=r)
     return r.json()

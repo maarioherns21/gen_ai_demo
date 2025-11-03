@@ -1,15 +1,9 @@
 from __future__ import annotations
-import os, time, requests
+import time, requests
 from typing import List, Dict, Any, Optional, Tuple
 from datetime import date, datetime, time as dtime, timezone
-from dotenv import load_dotenv
+from backend.config.settings import AMADEUS_BASE, AMADEUS_CLIENT_ID, AMADEUS_CLIENT_SECRET
 
-load_dotenv()
-
-# ---- Amadeus setup ----
-AMA_HOST = os.getenv("AMADEUS_BASE", "https://test.api.amadeus.com")
-AMA_CID  = os.getenv("AMADEUS_CLIENT_ID")
-AMA_SEC  = os.getenv("AMADEUS_CLIENT_SECRET")
 _ama_session = requests.Session()
 _ama_token: Optional[str] = None
 _ama_exp   = 0.0
@@ -17,17 +11,17 @@ _ama_exp   = 0.0
 def _ama_auth():
     """Fetch or reuse an Amadeus OAuth token."""
     global _ama_token, _ama_exp
-    if not AMA_CID or not AMA_SEC:
+    if not AMADEUS_CLIENT_ID or not AMADEUS_CLIENT_SECRET:
         raise RuntimeError("Amadeus credentials not set")
     now = time.time()
     if _ama_token and now < _ama_exp - 60:
         return
     r = _ama_session.post(
-        f"{AMA_HOST}/v1/security/oauth2/token",
+        f"{AMADEUS_BASE}/v1/security/oauth2/token",
         headers={"Accept": "application/vnd.amadeus+json"},
         data={"grant_type": "client_credentials",
-              "client_id": AMA_CID,
-              "client_secret": AMA_SEC},
+              "client_id": AMADEUS_CLIENT_ID,
+              "client_secret": AMADEUS_CLIENT_SECRET},
         timeout=20
     )
     r.raise_for_status()
@@ -77,7 +71,7 @@ def search_activities(*, city_code: str,
     # 1) Try /shopping/activities (by radius)
     try:
         r = _ama_session.get(
-            f"{AMA_HOST}/v1/shopping/activities",
+            f"{AMADEUS_BASE}/v1/shopping/activities",
             params={
                 "latitude": f"{lat:.6f}",
                 "longitude": f"{lon:.6f}",
@@ -99,7 +93,7 @@ def search_activities(*, city_code: str,
         east, west = lon + delta, lon - delta
         try:
             r2 = _ama_session.get(
-                f"{AMA_HOST}/v1/shopping/activities/by-square",
+                f"{AMADEUS_BASE}/v1/shopping/activities/by-square",
                 params={
                     "north": f"{north:.5f}",
                     "south": f"{south:.5f}",

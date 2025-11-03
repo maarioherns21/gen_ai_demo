@@ -1,14 +1,8 @@
 from __future__ import annotations
-import os, time, requests, re, math
+import time, requests, re
 from typing import List, Dict, Any, Optional
 from datetime import date, timedelta
-from dotenv import load_dotenv
-
-load_dotenv()
-
-HOST = os.getenv("AMADEUS_BASE", "https://test.api.amadeus.com")
-CID  = os.environ["AMADEUS_CLIENT_ID"]
-SEC  = os.environ["AMADEUS_CLIENT_SECRET"]
+from backend.config.settings import AMADEUS_BASE, AMADEUS_CLIENT_ID, AMADEUS_CLIENT_SECRET
 
 _session = requests.Session()
 _token: Optional[str] = None
@@ -32,9 +26,9 @@ def _auth():
     if _token and now < _exp - 60:
         return
     r = _session.post(
-        f"{HOST}/v1/security/oauth2/token",
+        f"{AMADEUS_BASE}/v1/security/oauth2/token",
         headers={"Accept": "application/vnd.amadeus+json"},
-        data={"grant_type": "client_credentials", "client_id": CID, "client_secret": SEC},
+        data={"grant_type": "client_credentials", "client_id": AMADEUS_CLIENT_ID, "client_secret": AMADEUS_CLIENT_SECRET},
         timeout=15,
     )
     r.raise_for_status()
@@ -51,7 +45,7 @@ def _auth():
 def _hotel_list_by_city(city: str, limit: int = 60) -> List[Dict[str, Any]]:
     _auth()
     r = _session.get(
-        f"{HOST}/v1/reference-data/locations/hotels/by-city",
+        f"{AMADEUS_BASE}/v1/reference-data/locations/hotels/by-city",
         params={"cityCode": city},
         timeout=20
     )
@@ -75,7 +69,7 @@ def _hotel_list_by_geocode(city: str, radius_km: float = 12.0, limit: int = 60) 
 
     try:
         resp = _session.get(
-            f"{HOST}/v1/reference-data/locations/hotels/by-geocode",
+            f"{AMADEUS_BASE}/v1/reference-data/locations/hotels/by-geocode",
             params={
                 "latitude": f"{lat:.5f}",
                 "longitude": f"{lon:.5f}",
@@ -97,7 +91,7 @@ def _hotel_list_by_geocode(city: str, radius_km: float = 12.0, limit: int = 60) 
 def _offers_by_city(city: str, check_in: date, check_out: date, adults: int, currency: str) -> List[Dict[str, Any]]:
     _auth()
     r = _session.get(
-        f"{HOST}/v3/shopping/hotel-offers",
+        f"{AMADEUS_BASE}/v3/shopping/hotel-offers",
         params={
             "cityCode": city,
             "checkInDate": check_in.isoformat(),
@@ -121,7 +115,7 @@ def _offers_by_ids_chunk(hids: List[str], check_in: date, check_out: date, adult
     """
     _auth()
     r = _session.get(
-        f"{HOST}/v3/shopping/hotel-offers",
+        f"{AMADEUS_BASE}/v3/shopping/hotel-offers",
         params={
             "hotelIds": ",".join(hids),
             "checkInDate": check_in.isoformat(),
@@ -152,7 +146,7 @@ def _by_hotels_enrich(hids: List[str]) -> Dict[str, Dict[str, Any]]:
     for i in range(0, len(hids), CHUNK):
         chunk = hids[i:i+CHUNK]
         r = _session.get(
-            f"{HOST}/v1/reference-data/locations/hotels/by-hotels",
+            f"{AMADEUS_BASE}/v1/reference-data/locations/hotels/by-hotels",
             params={"hotelIds": ",".join(chunk)},
             timeout=20,
         )
@@ -348,171 +342,3 @@ def search_hotels(
         item["rating"] = h.get("rating") or item["rating"]
 
     return final_list
-
-
-# from __future__ import annotations
-# import os
-# from datetime import date
-# from typing import List, Dict, Any
-
-# from amadeus import Client, ResponseError
-
-# --- client bootstrap (same style as your flights adapter) --------------------
-
-# def _client() -> Client:
-#     host = os.getenv("AMADEUS_HOST", "test")
-#     return Client(
-#         client_id=os.getenv("AMADEUS_CLIENT_ID"),
-#         client_secret=os.getenv("AMADEUS_CLIENT_SECRET"),
-#         hostname="test" if host == "test" else "production",
-#     )
-
-# # Small map airport→city code (extend as you like)
-# _AIRPORT_TO_CITY = {
-#     "FCO": "ROM", "CIA": "ROM",
-#     "MXP": "MIL", "LIN": "MIL", "BGY": "MIL",
-#     "VCE": "VCE", "FLR": "FLR", "NAP": "NAP",
-#     "JFK": "NYC", "LGA": "NYC", "EWR": "NYC",
-#     "SFO": "SFO", "OAK": "SFO", "SJC": "SFO",
-#     "MEX": "MEX",
-# }
-
-# def _to_city_code(city: str) -> str:
-#     if not city:
-#         return "ROM"
-#     up = city.strip().upper()
-#     if len(up) == 3:
-#         return _AIRPORT_TO_CITY.get(up, up)  # airport→city or already city code
-#     # minimal name mapping
-#     name_map = {"ROME": "ROM", "MILAN": "MIL", "VENICE": "VCE", "NAPLES": "NAP", "FLORENCE": "FLR"}
-#     return name_map.get(up, "ROM")
-
-# # --- public function your LodgingAgent calls ----------------------------------
-
-# def search_hotels(
-#     *, city: str, check_in: date, check_out: date, guests: int = 1, max_results: int = 3
-# ) -> List[Dict[str, Any]]:
-#     """
-#     Real hotel search via Amadeus Self-Service Hotels (Hotel Offers Search v3).
-#     Returns a list of dicts shaped like your previous mock to keep agents unchanged.
-#     """
-#     amadeus = _client()
-#     city_code = _to_city_code(city)
-#     currency = os.getenv("CURRENCY", "USD")
-
-#     # Amadeus: /v3/shopping/hotel-offers supports search by cityCode
-#     params = {
-#         "cityCode": city_code,
-#         "checkInDate": check_in.isoformat(),
-#         "checkOutDate": check_out.isoformat(),
-#         "adults": str(guests),
-#         "roomQuantity": "1",
-#         "currency": currency,
-#         # "bestRateOnly": "true",     # uncomment if you want only best rates
-#         # "view": "FULL",             # FULL returns richer details
-#         "sort": "PRICE",              # helps keep results predictable
-#     }
-
-#     try:
-#         res = amadeus.shopping.hotel_offers_search.get(**params)  # SDK call
-       
-#     except ResponseError as e:
-#         raise RuntimeError(f"Amadeus hotels error: {getattr(e, 'code', 'unknown')} {e}") from e
-
-#     data = res.data or []
-#     out: List[Dict[str, Any]] = []
-
-#     for item in data:
-#         if len(out) >= max_results:
-#             break
-#         hotel = item.get("hotel") or {}
-#         offers = item.get("offers") or []
-#         if not offers:
-#             continue
-
-#         # take the first offer as a sample
-#         off = offers[0]
-#         price = (off.get("price") or {})
-#         total_str = price.get("grandTotal") or price.get("total")
-#         try:
-#             total = float(total_str) if total_str is not None else None
-#         except Exception:
-#             total = None
-
-#         # refundability / cancellation (not always populated)
-#         refundable = False
-#         cancel_text = "See rate details"
-#         policies = off.get("policies") or {}
-#         cancellation = policies.get("cancellation")
-#         if isinstance(cancellation, dict):
-#             refundable = bool(cancellation.get("refundable", False))
-#             cancel_text = (
-#                 cancellation.get("description")
-#                 or cancellation.get("type")
-#                 or cancel_text
-#             )
-
-#         nights = max((check_out - check_in).days, 1)
-#         ppn = round(total / nights, 2) if (total and nights) else total
-
-#         out.append({
-#             "name": hotel.get("name") or "Hotel",
-#             "city": hotel.get("cityCode") or city_code,
-#             "refundable": refundable,
-#             "cancellation_policy": cancel_text,
-#             "price_per_night_usd": ppn,
-#             "total_usd": total,
-#             "neighborhood": (hotel.get("address") or {}).get("cityName"),
-#             "rating": hotel.get("rating"),  # often string like "4"
-#             "room_type": ((off.get("room") or {}).get("type")
-#                           or (off.get("room") or {}).get("description", {}).get("text")),
-#         })
-
-#     # If Amadeus returned nothing usable, raise so your fallback (if any) can kick in
-#     if not out:
-#         raise RuntimeError(f"No hotel offers returned for {city} ({city_code}) {check_in}→{check_out}")
-
-#     return out
-
-
-# def search_hotels(*, city: str, check_in: date, check_out: date, guests: int = 1, max_results: int = 3) -> List[Dict[str, Any]]:
-#     """
-#     Mock hotel search. Replace with real provider later (Booking/Expedia API).
-#     """
-#     nights = (check_out - check_in).days
-#     base = [
-#         {
-#             "name": "Demo Inn Centro",
-#             "city": city,
-#             "refundable": True,
-#             "cancellation_policy": "Free until 24h before check-in",
-#             "price_per_night_usd": 120.0,
-#             "total_usd": round(120.0 * max(nights, 1), 2),
-#             "neighborhood": "Historic Center",
-#             "rating": 8.6,
-#             "room_type": "Double",
-#         },
-#         {
-#             "name": "Traste Stay",
-#             "city": city,
-#             "refundable": False,
-#             "cancellation_policy": "Non-refundable",
-#             "price_per_night_usd": 95.0,
-#             "total_usd": round(95.0 * max(nights, 1), 2),
-#             "neighborhood": "Trastevere",
-#             "rating": 8.1,
-#             "room_type": "Queen",
-#         },
-#         {
-#             "name": "Villa Verde Suites",
-#             "city": city,
-#             "refundable": True,
-#             "cancellation_policy": "Free until 48h before",
-#             "price_per_night_usd": 160.0,
-#             "total_usd": round(160.0 * max(nights, 1), 2),
-#             "neighborhood": "Near Park",
-#             "rating": 9.0,
-#             "room_type": "King",
-#         },
-#     ]
-#     return base[:max_results]
