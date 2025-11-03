@@ -1,0 +1,64 @@
+[project]
+name = "agentic-vacation-backend-01"
+version = "0.1.0"
+description = "Agentic AI backend for the Vacation Planner"
+authors = [{ name = "Mario Hernandez" }]
+license = "MIT"
+requires-python = ">=3.11"
+
+dependencies = [
+  "fastapi>=0.110",
+  "uvicorn[standard]>=0.30",
+  "pydantic>=2.6",
+  "sqlalchemy>=2.0",
+  "psycopg2-binary>=2.9",
+  "httpx>=0.27",
+  "requests>=2.31",
+  "python-dotenv>=1.0",
+  "redis>=5.0",
+  "openai>=1.0",
+  "pandas>=2.2",
+  "faiss-cpu>=1.8",
+  "typing-extensions>=4.8",
+  "amadeus>=12.0.0",
+  # ↓ add the Agents SDK here
+  "openai-agents>=0.1.0",
+]
+
+[dependency-groups]
+dev = [
+  "pytest>=8.0",
+  "ruff>=0.3",
+  "black>=24.0",
+  "mypy>=1.8",
+  "pytest-asyncio>=0.23",
+]
+
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.black]
+line-length = 100
+target-version = ["py311"]
+
+[tool.ruff]
+line-length = 100
+select = ["E", "F", "I"]
+ignore = ["E501"]
+
+[tool.mypy]
+python_version = "3.11"
+warn_unused_configs = true
+disallow_untyped_defs = true
+ignore_missing_imports = true
+pretty = true
+
+# 🔧 Use package discovery under the "backend" namespace
+[tool.setuptools.packages.find]
+where = [".."]          # look one directory up from backend/ (the repo root)
+include = ["backend*"]  # ONLY pick up backend and backend.* packages
+
+# (Optional) include non-Python files like prompt templates in wheels/sdist
+[tool.setuptools.package-data]
+"backend" = ["../docs/prompt-templates/*.md"]

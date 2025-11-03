@@ -1,0 +1,22 @@
+Metadata-Version: 2.4
+Name: agentic-vacation-backend-01
+Version: 0.1.0
+Summary: Agentic AI backend for the Vacation Planner
+Author: Mario Hernandez
+License-Expression: MIT
+Requires-Python: >=3.11
+Requires-Dist: fastapi>=0.110
+Requires-Dist: uvicorn[standard]>=0.30
+Requires-Dist: pydantic>=2.6
+Requires-Dist: sqlalchemy>=2.0
+Requires-Dist: psycopg2-binary>=2.9
+Requires-Dist: httpx>=0.27
+Requires-Dist: requests>=2.31
+Requires-Dist: python-dotenv>=1.0
+Requires-Dist: redis>=5.0
+Requires-Dist: openai>=1.0
+Requires-Dist: pandas>=2.2
+Requires-Dist: faiss-cpu>=1.8
+Requires-Dist: typing-extensions>=4.8
+Requires-Dist: amadeus>=12.0.0
+Requires-Dist: openai-agents>=0.1.0
