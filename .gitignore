@@ -1,0 +1,151 @@
+# ================================
+#  Core Python / Backend
+# ================================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+*.eggs/
+*.log
+*.pot
+*.mo
+*.pyc
+*.cache
+*.tmp
+*.swp
+*.sqlite3
+.pytest_cache/
+.tox/
+.coverage
+htmlcov/
+dist/
+build/
+*.lock
+uv.lock
+.env
+.venv/
+venv/
+env/
+ENV/
+
+# Ignore local virtual envs
+backend/.venv/
+frontend/node_modules/
+
+# But keep dependency descriptors
+!backend/pyproject.toml
+!backend/uv.lock
+!frontend/package.json
+!frontend/next.config.js
+
+# ================================
+#  FastAPI / Uvicorn runtime
+# ================================
+*.pid
+*.db
+*.sqlite
+instance/
+backend/.mypy_cache/
+backend/.ruff_cache/
+backend/.pytest_cache/
+backend/__pycache__/
+backend/.coverage
+backend/scripts
+
+# ================================
+#  Frontend (Next.js / Node)
+# ================================
+node_modules/
+.next/
+out/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+package-lock.json
+.pnpm-debug.log
+dist/
+coverage/
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# ================================
+#  IDEs / Editors
+# ================================
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+.DS_Store
+Thumbs.db
+
+# ================================
+#  OS & Misc
+# ================================
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# ================================
+#  Docker & Infrastructure
+# ================================
+docker-compose.override.yml
+*.pid
+*.seed
+*.bak
+*.old
+*.orig
+*.rej
+
+# ================================
+#  Notebooks / Data / Artifacts
+# ================================
+*.ipynb_checkpoints
+data/cache/
+data/embeddings/
+data/*.db
+data/*.csv
+data/*.parquet
+logs/
+tmp/
+artifacts/
+notebooks/.ipynb_checkpoints
+
+# ================================
+#  UV / Poetry / PDM / Pipenv
+# ================================
+.poetry/
+pdm.lock
+Pipfile
+Pipfile.lock
+
+# ================================
+#  Local & Secrets
+# ================================
+*.pem
+*.key
+*.crt
+*.csr
+*.env*
+.envrc
+*.token
+*.credentials
+secrets.toml
+config/local_settings.py
+
+# ================================
+#  TypeScript & Build cache
+# ================================
+*.tsbuildinfo
+.eslintcache
+.next/cache/

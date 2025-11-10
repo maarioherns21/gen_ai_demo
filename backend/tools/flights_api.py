@@ -76,7 +76,17 @@ def search_flights(*, origin_code: str, dest_code: str, depart: date, ret: Optio
     """
     origins = _city_to_airports(origin_code)
     dests   = _city_to_airports(dest_code)
-
+    
+    print("[Adapter] Amadeus params:", {
+        "originLocationCode": origin_code,
+        "destinationLocationCode": dest_code,
+        "departureDate": str(depart),
+        "returnDate": str(ret),
+        "adults": adults,
+        "nonStop": bool(non_stop) if non_stop is not None else None,
+        "currencyCode": currency,
+        "max": max_results
+    })
     body_base = {
         "currencyCode": currency,
         "travelers": [{"id": str(i+1), "travelerType": "ADULT"} for i in range(max(1, adults))],
@@ -107,6 +117,7 @@ def search_flights(*, origin_code: str, dest_code: str, depart: date, ret: Optio
 
             j = _post_offers(body)
             data = (j or {}).get("data") or []
+            print("API FLIGHTS &&&&&&",data) 
             if data:
                 return [_normalize_offer(x) for x in data]
     return []

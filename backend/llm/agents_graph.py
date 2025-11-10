@@ -8,52 +8,52 @@ from backend.llm.agent_tools import (
     tool_search_activities,
 )
 
-PROMPT_DIR = Path(__file__).parents[2] / "docs" / "prompt-templates"
+PROMPT_DIR = Path(__file__).parents[2] / "docs" / "prompts"
 
 
 orchestrator = Agent(
     name="Orchestrator",
-    instructions=(PROMPT_DIR / "orchestrator_system.md").read_text(),
+    instructions=(PROMPT_DIR / "orchestrator.md").read_text(),
     model=OPENAI_MODEL,
     # No tools here; it only decides next step + collects inputs
 )
 
 planner = Agent(
     name="Planner",
-    instructions=(PROMPT_DIR / "planner_agent.md").read_text(),
+    instructions=(PROMPT_DIR / "planner.md").read_text(),
     model=OPENAI_MODEL,
-    tools=[tool_search_flights],  # allow 1 flight probe for price anchor if desired
+    tools=[],  # ← no tools; keeps it deterministic
 )
 
 flights = Agent(
     name="Flights",
-    instructions=(PROMPT_DIR / "transport_agent.md").read_text(),
+    instructions=(PROMPT_DIR / "flights.md").read_text(),
     model=OPENAI_MODEL,
     tools=[tool_search_flights],
 )
 
 lodging = Agent(
     name="Lodging",
-    instructions=(PROMPT_DIR / "lodging_agent.md").read_text(),
+    instructions=(PROMPT_DIR / "lodging.md").read_text(),
     model=OPENAI_MODEL,
     tools=[tool_search_hotels],
 )
 
 activities = Agent(
     name="Activities",
-    instructions=(PROMPT_DIR / "activity_agent.md").read_text(),
+    instructions=(PROMPT_DIR / "activities.md").read_text(),
     model=OPENAI_MODEL,
     tools=[tool_search_activities],
 )
 
 budget = Agent(
     name="Budget",
-    instructions=(PROMPT_DIR / "budget_agent.md").read_text(),
+    instructions=(PROMPT_DIR / "budget.md").read_text(),
     model=OPENAI_MODEL,
 )
 
 critic = Agent(
     name="Critic",
-    instructions=(PROMPT_DIR / "critic_agent.md").read_text(),
+    instructions=(PROMPT_DIR / "critics.md").read_text(),
     model=OPENAI_MODEL,
 )

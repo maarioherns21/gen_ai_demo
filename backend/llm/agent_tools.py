@@ -27,8 +27,9 @@ def tool_search_flights(
         non_stop=non_stop,
         max_results=int(max_results),
     ) or []
+    print("Search flights payload ****", offers)
     # keep payload small
-    return {"source": "amadeus", "currency": currency, "count": len(offers), "offers": offers[:12]}
+    return {"source": "amadeus", "currency": currency, "count": len(offers), "offers": offers[:3]}
 
 @function_tool
 def tool_search_hotels(
@@ -49,7 +50,8 @@ def tool_search_hotels(
         refundable_only=bool(refundable_only),
         max_results=int(max_results),
     ) or []
-    return {"hotels": res[:10]}
+    print("Search Hotels payload ****", res)
+    return {"hotels": res[:3]}
 
 @function_tool
 def tool_search_activities(
@@ -62,4 +64,5 @@ def tool_search_activities(
         for_date=date.fromisoformat(for_date),
         max_results=int(max_results),
     ) or []
-    return {"activities": acts[:6]}
+    print("Search Activities payload ****", acts)
+    return {"activities": acts[:5]}
